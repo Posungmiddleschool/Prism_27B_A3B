@@ -1,0 +1,10 @@
+version,head_counted,heldout_ppl,text_kl,reasoning_kl,decisive_matched,runs_of_12,score_small_eval,arithmetic_student,arithmetic_n,loop_own_answers_end,params_per_token_mean_B,params_per_token_max_B,train_steps,train_minutes,gpu
+v9,no,200000,,,,,,0,20,,,,,,A100-80GB
+v10,no,160.2,3.43,,,,,0,20,,,,400,420,A100-80GB
+v11,no,1576,5.73,,,,,,,,,,,,A100-80GB
+v12,no,156.0,3.37,,,,,,,,,,0,30,A100-80GB
+v13,no,41.5,2.17,,,,,0,20,,,,324,160,H200
+v14,no,,2.15,,,,,,,,,,0,,A100-80GB
+v15,no,31.35,,,,,,1,20,,,,322,,A100-80GB
+v16.2,yes,33.40,1.862,0.540,0.914,0.462,2.132,2,20,,2.84,2.9990,310,201,A100-80GB
+v17,yes,28.94,1.699,0.528,0.919,0.424,1.962,3,20,0.13,2.98,2.9996,236,202,A100-80GB
