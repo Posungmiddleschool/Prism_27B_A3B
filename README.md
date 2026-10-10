@@ -99,8 +99,6 @@ Details and equations: [docs/METHODS.md](docs/METHODS.md).
 3. GPQA Diamond above a dense 4B model (76.2)
 4. GPQA Diamond above a dense 9B model (81.7) — the goal. The 27B original scores 89.2.
 
-None has been passed yet. Plan: [ROADMAP.md](ROADMAP.md).
-
 ## Repository
 
 | File | What |
@@ -109,9 +107,6 @@ None has been passed yet. Plan: [ROADMAP.md](ROADMAP.md).
 | [RESULTS.md](RESULTS.md), [results.csv](results.csv) | every measured number, per version |
 | [WORKLOG_v14-v16.md](WORKLOG_v14-v16.md), [WORKLOG_v17.md](WORKLOG_v17.md) | what was changed, what failed, why |
 | [docs/METHODS.md](docs/METHODS.md) | the mechanisms, with equations |
-| [ROADMAP.md](ROADMAP.md) | v18 → v23 |
-| [HOW_TO_RUN.md](HOW_TO_RUN.md) | running a version on Colab, and what it costs |
-| [RESEARCH_SUMMARY.md](RESEARCH_SUMMARY.md) | one-page summary (English / 한국어) |
 
 ## Base model and license
 
