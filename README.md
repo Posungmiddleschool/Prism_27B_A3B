@@ -135,8 +135,10 @@ None has been passed yet. Plan: [ROADMAP.md](ROADMAP.md).
 | [HOW_TO_RUN.md](HOW_TO_RUN.md) | running a version on Colab, and what it costs |
 | [RESEARCH_SUMMARY.md](RESEARCH_SUMMARY.md) | one-page summary (English / 한국어) |
 
-The notebooks of v18 and later and all trained weights are not public yet.
+The notebooks of v18 and later and all trained weights are not public yet. We will make it public as soon as possible.
 
+- **v20 — Fisher lab (no training).** Nine training-free knobs on the v19 state, including reading, budgeting and imputing by the Fisher curvature of the global loss: the best gave only −0.4%, and the best stack (score 3.085 → 3.068) lost arithmetic 24 → 21 and MMLU-Pro 18 → 12, so it was not deployed.
+- **v20 — ECHO (no training).** Imputing the unread neurons from the lens errors of the read ones: the read neurons explained −5.3% of the error on the unread ones (the lens reads a biased sample), and the score rose 2.90 → 3.05 at a quarter dose and 11.2 at full dose; not deployed. Three failures in a row: the next step needs training.
 ## Base model and license
 
 Base model: Qwen3.8-27B by Alibaba Cloud (Apache-2.0). Reference scores for the dense 4B / 9B / 27B models are taken
