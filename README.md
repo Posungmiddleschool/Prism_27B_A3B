@@ -87,9 +87,6 @@ and v17 recovered all of it under the strict count.
 | **LOOP** | training | The student writes its own answers to fresh problems; the teacher grades every token it wrote. |
 | **Fuse** | training | A non-finite loss or gradient never reaches the weights; the deepest affected tensor is named. |
 
-Details and equations: [docs/METHODS.md](docs/METHODS.md). The mechanisms of v18 and later are not public yet; they
-will be released here later under the same license.
-
 ## What did not work
 
 - **v11 — stream realignment.** Matching intermediate states made the model far worse (PPL 160 → 1,576). Rolled back.
