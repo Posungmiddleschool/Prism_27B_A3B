@@ -8,9 +8,10 @@ The goal is deliberately hard: **beat a dense 9B model on reasoning benchmarks w
 faster than the 27B original.** That goal has **not** been reached. This page reports where the project
 actually stands, including the experiments that failed and the measurement errors we found in our own work.
 
-**Latest: v17** — under the strict per-token count, held-out perplexity **28.9** (dense teacher 6.5). This is
-better than the 31.4 that v15 reported while it was still, by mistake, using an uncounted dense output head.
-The student's accuracy on arithmetic answers it writes itself rose from 7% to 13% during training.
+**Latest: v19.** Under the strict per-token count the student answered **3 of 20 GSM8K test problems** correctly
+(the first non-zero GSM8K score of the project; v18: 0/20; the dense teacher: 19/20) and **17 of 140 MMLU-Pro**
+questions (v18: 12/140; teacher: 83/140). v19 was reached **without any training**, from the v18 state, for about
+$4 of compute. v18's held-out perplexity is **26.7** (dense teacher 6.5).
 
 ## The idea
 
@@ -24,28 +25,46 @@ and can be switched on at any time for distillation or comparison.
 
 **Counting rule (strict since v16).** Every parameter a token's forward pass reads is counted by a census —
 exact rows, routers, predictors, low-rank corrections and the output head included — and the limit holds for
-**every token**, not on average. Current census: **2.998B** at the quotas; the largest per-token reading measured
-on held-out text is 2.9996B.
+**every token**, not on average. Census at the quotas: **2.998B**; the largest per-token reading measured on
+held-out text is 2.9996B.
 
 ## Results
 
 Held-out text the model was not trained on. Dense teacher PPL: **6.53**.
 
-| Version | What changed | Held-out PPL | One-step arithmetic |
-|---|---|---|---|
-| v10 | shadow execution, 400 distillation steps | 160.2 | 0/20 |
-| v13 | neuron lens on every FFN + healing | 41.5 * | 0/20 |
-| v15 | consequence head, attention shadows | 31.35 * | 1/20 |
-| v16.2 | **strict law**, strict head + LIFT, wallet | 33.40 | 2/20 |
-| **v17** | in-step teacher, full-vocabulary KL, DRIFT, LOOP, wallet fix | **28.94** | 3/20 |
+| Version | What changed | Held-out PPL | One-step arithmetic | GSM8K (test) | MMLU-Pro |
+|---|---|---|---|---|---|
+| v10 | shadow execution, 400 distillation steps | 160.2 | 0/20 | — | — |
+| v13 | neuron lens on every FFN + healing | 41.5 * | 0/20 | — | — |
+| v15 | consequence head, attention shadows | 31.35 * | 1/20 | — | — |
+| v16.2 | **strict law**, strict head + LIFT, wallet | 33.40 | 2/20 | — | — |
+| v17 | in-step teacher, full-vocabulary KL, DRIFT, LOOP, wallet fix | 28.94 | 3/20 | — | — |
+| v18 | 300-minute training run (details not public yet) | **26.69** | 24/100 | 0/20 | 12/140 |
+| **v19** | training-free adjustments of the v18 state (details not public yet) | not measured | 23/100 | **3/20** | **17/140** |
+| *dense teacher* | | *6.53* | *100/100* | *19/20* | *83/140* |
 
 \* measured with the uncounted dense output head (see the correction below). From v16.2 on, every number is measured
-on the model exactly as it is counted. Full tables: [RESULTS.md](RESULTS.md). Run-by-run notes:
-[WORKLOG_v14-v16.md](WORKLOG_v14-v16.md), [WORKLOG_v17.md](WORKLOG_v17.md).
+on the model exactly as it is counted. From v18 on, one-step arithmetic uses 100 problems instead of 20.
 
-**v17 in numbers** (small held-out eval, v16.2 → v17): text KL 1.862 → 1.699; positions where the teacher is ≥ 90%
-sure, matched 91.4% → 91.9%; held-out PPL 33.4 → 28.9; the student's own LOOP answers 7% → 13% correct; mean
-parameters per token 2.84B → 2.98B (the wallet now spends its budget).
+**v18 in numbers** (restored v17 → trained v18, same held-out blocks): text KL 1.820 → 1.751; reasoning KL
+1.229 → 0.838; positions where the teacher is ≥ 90% sure, matched 81.4% → 87.0%; runs of 12 such positions without
+a single miss 28.3% → 37.1%. Long-context KL on one 7.7K-token document improved most at the far end: −0.40 on
+tokens 0–1K, −0.48 on 1K–4K, −0.73 on 4K–7.7K.
+
+**v19 in numbers** (v18 state → v19, twice the held-out documents, no training): text KL 1.760 → 1.694; GSM8K
+0/20 → 3/20; MMLU-Pro 12/140 → 17/140. The improvement was chosen on held-out text and reasoning documents only;
+GSM8K and MMLU-Pro were measured after the choice, never optimised.
+
+**Read these benchmark numbers with care.** 3/20 and 17/140 are small samples (17/140 is 12%; chance on MMLU-Pro is
+10%). They show a direction, not a level. Larger GSM8K evaluations are planned.
+
+## Data disclosure: GSM8K
+
+The training data of **v15–v18** contained word problems taken from the **GSM8K train split** (with the teacher's
+distribution as the target). The GSM8K **test** split — the one every number above is measured on — was never trained
+on, and every trace with a GSM8K test question in its prompt was filtered out. From **v19 on, no GSM8K problem of
+either split is used for training**: word problems are generated by a program, and both splits are used only to
+filter matching text out of the training data. The v19 state still descends from v18, which saw GSM8K-train problems.
 
 ## Correction: the v13–v15 numbers were measured with a dense output head
 
@@ -54,7 +73,7 @@ The v16 audit found two places where the forward pass did not match the census: 
 v16. On the same blocks, the honest head raised text KL from 1.78 to 2.88 and reasoning KL from 0.62 to 2.61. v16.2
 and v17 recovered all of it under the strict count.
 
-## Mechanisms
+## Mechanisms (up to v17)
 
 | Name | Where | What it does |
 |---|---|---|
@@ -62,13 +81,14 @@ and v17 recovered all of it under the strict count.
 | **Shadow execution** | attention projections | A low-rank estimate everywhere, exact row-blocks only where a router selects them. |
 | **Strict memory writes** | Gated-DeltaNet layers | Exactly 4 of 48 value heads write exactly per token; a critic picks them (straight-through in log-score space). |
 | **Strict head + LIFT** | output layer | A rank-256 proxy scores the vocabulary; ~6,000 rows are exact. LIFT trains the proxy to lift the teacher's tokens over the shortlist line. |
-| **Wallet** | every selectable site | Each token gets its own budget and may buy more items at one site by selling at another; it can never go below zero. Prices come from gradient probes; the price level follows the unspent budget. |
+| **Wallet** | every selectable site | Each token gets its own budget and may buy more items at one site by selling at another; it can never go below zero. |
 | **In-step teacher, full KL** | training | The dense teacher labels each batch inside the training step; the loss is the KL to its whole 248k-token distribution. |
 | **DRIFT** | training | The student's own wrong predictions are written into the text it reads; the teacher shows how to go on from them. |
 | **LOOP** | training | The student writes its own answers to fresh problems; the teacher grades every token it wrote. |
 | **Fuse** | training | A non-finite loss or gradient never reaches the weights; the deepest affected tensor is named. |
 
-Details and equations: [docs/METHODS.md](docs/METHODS.md).
+Details and equations: [docs/METHODS.md](docs/METHODS.md). The mechanisms of v18 and later are not public yet; they
+will be released here later under the same license.
 
 ## What did not work
 
@@ -77,36 +97,45 @@ Details and equations: [docs/METHODS.md](docs/METHODS.md).
 - **v16.1 — NaN at step 2.** The memory-write straight-through gradient grew with `e^score` and overflowed. Fixed by
   moving it to log-score space.
 - **v16.2 / v17 — zero reasoning traces.** The trace loader merged two incompatible dataset folders and read the
-  wrong column; every trace was silently dropped. Fixed for v18, which now stops with a banner when this happens.
+  wrong column; every trace was silently dropped. Found and fixed later.
 - **v17 — DRIFT on arithmetic.** Rewriting digits in problem rows dropped "12 decisive positions in a row" from 46% to
-  25% at step 50 (it recovered to 42% by step 200). v18 keeps DRIFT out of problem rows.
-- **v17 — the wallet sold the memory.** Tokens kept 1.0 of 4 exact memory writes and 0.4 of 1.8 query row-blocks to
-  buy FFN neurons. v18 lets a token sell at most one of each.
+  25% at step 50 (it recovered to 42% by step 200).
+- **After v18 — a per-layer closed-form correction.** It lowered every layer's own error and raised the whole model's
+  held-out KL from 1.70 to 2.54; it was undone automatically. The lesson: after end-to-end training the layers rely on
+  each other's errors, and only changes judged on the whole model survive.
 
 ## Current limitations
 
-- **Quality is far from the goal.** PPL 28.9 against 6.53; one-step arithmetic 3/20 (teacher 20/20).
-- **No benchmark numbers yet.** GSM8K, MMLU-Pro and the long-context curve are measured from v18 on; GPQA is not run.
-- **Slower than the original today.** Sparse paths are computed through masks over dense operations (decode 1.2 tok/s
-  vs 5.5 for the dense model in the same loop). No sparse kernel yet.
-- **Long context untested.** All training so far used 1,024-token rows; v18 is the first with 2,048-token rows.
-- **Small compute.** One A100 80GB, about 3.5 hours of training per version.
+- **Quality is far from the goal.** PPL 26.7 against 6.53; GSM8K 3/20 and one-step arithmetic 23/100 (teacher 19/20 and
+  100/100).
+- **Small benchmark samples.** 20 GSM8K and 140 MMLU-Pro questions so far; GPQA is not run.
+- **Slower than the original today.** Sparse paths are computed through masks over dense operations (student decoding
+  ~2–3 tok/s vs ~12 tok/s for the dense model in the same loop). No sparse kernel yet.
+- **Long context only partly measured.** One long document (7.7K tokens); training rows are at most 2,048 tokens.
+- **Small compute.** One A100 80GB per run; v18 trained for 300 minutes (about $20); v19 used about $4 and no training.
 
 ## Gates
 
-1. one-step arithmetic: more than half correct — **3/20 now**
-2. GSM8K: more than half correct — measured from v18
+1. one-step arithmetic: more than half correct — **23/100 now**
+2. GSM8K: more than half correct — **3/20 now** (15%)
 3. GPQA Diamond above a dense 4B model (76.2)
 4. GPQA Diamond above a dense 9B model (81.7) — the goal. The 27B original scores 89.2.
+
+None has been passed yet. Plan: [ROADMAP.md](ROADMAP.md).
 
 ## Repository
 
 | File | What |
 |---|---|
-| `PRISM_v10 … v18_Qwen3.8-27B_A3B.ipynb` | one self-contained notebook per version; each restores the previous version's saved state |
-| [RESULTS.md](RESULTS.md), [results.csv](results.csv) | every measured number, per version |
+| `PRISM_v10 … v17_Qwen3.8-27B_A3B.ipynb` | one self-contained notebook per version; each restores the previous version's saved state |
+| [RESULTS.md](RESULTS.md), [results.csv](results.csv) | measured numbers, per version |
 | [WORKLOG_v14-v16.md](WORKLOG_v14-v16.md), [WORKLOG_v17.md](WORKLOG_v17.md) | what was changed, what failed, why |
-| [docs/METHODS.md](docs/METHODS.md) | the mechanisms, with equations |
+| [docs/METHODS.md](docs/METHODS.md) | the mechanisms up to v17, with equations |
+| [ROADMAP.md](ROADMAP.md) | what comes next |
+| [HOW_TO_RUN.md](HOW_TO_RUN.md) | running a version on Colab, and what it costs |
+| [RESEARCH_SUMMARY.md](RESEARCH_SUMMARY.md) | one-page summary (English / 한국어) |
+
+The notebooks of v18 and later and all trained weights are not public yet.
 
 ## Base model and license
 
