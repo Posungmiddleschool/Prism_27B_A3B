@@ -8,7 +8,7 @@ The goal is deliberately hard: **beat a dense 9B model on reasoning benchmarks w
 faster than the 27B original.** That goal has **not** been reached. This page reports where the project
 actually stands, including the experiments that failed and the measurement errors we found in our own work.
 
-**Latest: v19.** Under the strict per-token count the student answered **3 of 20 GSM8K test problems** correctly
+**Latest published to the huggingface: v19.** Under the strict per-token count the student answered **3 of 20 GSM8K test problems** correctly
 (the first non-zero GSM8K score of the project; v18: 0/20; the dense teacher: 19/20) and **17 of 140 MMLU-Pro**
 questions (v18: 12/140; teacher: 83/140). v19 was reached **without any training**, from the v18 state, for about
 $4 of compute. v18's held-out perplexity is **26.7** (dense teacher 6.5).
