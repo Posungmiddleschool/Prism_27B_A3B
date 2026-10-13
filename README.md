@@ -1,4 +1,4 @@
-3# PRISM — a 27B model that reads 3B parameters per token
+# PRISM — a 27B model that reads 3B parameters per token
 
 PRISM is an independent research project. It takes the dense, Apache-2.0 **Qwen3.8-27B** and tries to turn it,
 after training, into a sparse model that touches **at most 3.0B of its 27B parameters for each token** — a
@@ -121,19 +121,7 @@ will be released here later under the same license.
 3. GPQA Diamond above a dense 4B model (76.2)
 4. GPQA Diamond above a dense 9B model (81.7) — the goal. The 27B original scores 89.2.
 
-None has been passed yet. Plan: [ROADMAP.md](ROADMAP.md).
-
-## Repository
-
-| File | What |
-|---|---|
-| `PRISM_v10 … v17_Qwen3.8-27B_A3B.ipynb` | one self-contained notebook per version; each restores the previous version's saved state |
-| [RESULTS.md](RESULTS.md), [results.csv](results.csv) | measured numbers, per version |
-| [WORKLOG_v14-v16.md](WORKLOG_v14-v16.md), [WORKLOG_v17.md](WORKLOG_v17.md) | what was changed, what failed, why |
-| [docs/METHODS.md](docs/METHODS.md) | the mechanisms up to v17, with equations |
-| [ROADMAP.md](ROADMAP.md) | what comes next |
-| [HOW_TO_RUN.md](HOW_TO_RUN.md) | running a version on Colab, and what it costs |
-| [RESEARCH_SUMMARY.md](RESEARCH_SUMMARY.md) | one-page summary (English / 한국어) |
+None has been passed yet.
 
 - **v20 — Fisher lab (no training).** Nine training-free knobs on the v19 state, including reading, budgeting and imputing by the Fisher curvature of the global loss: the best gave only −0.4%, and the best stack (score 3.085 → 3.068) lost arithmetic 24 → 21 and MMLU-Pro 18 → 12, so it was not deployed.
 - **v20 — ECHO (no training).** Imputing the unread neurons from the lens errors of the read ones: the read neurons explained −5.3% of the error on the unread ones (the lens reads a biased sample), and the score rose 2.90 → 3.05 at a quarter dose and 11.2 at full dose; not deployed. Three failures in a row: the next step needs training.
